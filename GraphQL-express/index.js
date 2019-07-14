@@ -1,32 +1,29 @@
-// index.js
-// by requiring `babel/register`, all of our successive `require`s will be Babel'd
-require('@babel/register');
-require('./server.js');
+const express = require('express');
+const graphqlHTTP = require('express-graphql');
+const {
+    buildSchema
+} = require('graphql');
 
-const express = require('express')
-const schema = require('./schema');
-const { graphql } = require('graphql');
-const bodyParser = require('body-parser');
+// 使用 GraphQL Schema Language 创建一个 schema
+const schema = buildSchema(`
+  type Query {
+    hello: String
+  }
+`);
 
+// root 提供所有 API 入口端点相应的解析器函数
+const root = {
+    hello: () => {
+        return 'Hello world!';
+    },
+};
 
-let app = express();
-let PORT = 3000;
-
-app.use(bodyParser.text({
-    type: 'application/graphql'
+const app = express();
+app.use('/graphql', graphqlHTTP({
+    schema: schema,
+    rootValue: root,
+    graphiql: true,
 }));
-
-app.post('/graphql', (req, res) => {
-    // execute GraphQL!
-    graphql(schema, req.body)
-        .then((result) => {
-            res.send(JSON.stringify(result, null, 2));
-        });
-});
-
-let server = app.listen(PORT, function () {
-    let host = server.address().address;
-    let port = server.address().port;
-
-    console.log('GraphQL listening at http://%s:%s', host, port);
+app.listen(4000, () => {
+    console.log('Running a GraphQL API server at localhost:4000/graphql');
 });
