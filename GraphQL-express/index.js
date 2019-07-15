@@ -1,29 +1,63 @@
-const express = require('express');
-const graphqlHTTP = require('express-graphql');
+// const express = require('express');
+// const expressGraphql = require('express-graphql');
+// const schema = require('./schema');
+
+// const app = express();
+// app.get('/', (req, res) => res.end('index'));
+// app.use('/graphql', expressGraphql({
+//     schema,
+//     graphiql: true
+// }));
+
+
+// app.listen(8000, (err) => {
+//     if (err) {
+//         throw new Error(err);
+//     }
+//     console.log('*** server started ***');
+// });
+
+require('@babel/register');
+
+const express = require('express')
+const expressGraphql = require('express-graphql');
+const bodyParser = require('body-parser')
+
+const { database } = require('./mongodb')
 const {
-    buildSchema
-} = require('graphql');
+    addOne, getAllList, editOne, tickOne, delOne
+} = require('./controllers/list')
+const schema = require('./graphql/schema')
 
-// 使用 GraphQL Schema Language 创建一个 schema
-const schema = buildSchema(`
-  type Query {
-    hello: String
-  }
-`);
+database() // 链接数据库并且初始化数据模型
 
-// root 提供所有 API 入口端点相应的解析器函数
-const root = {
-    hello: () => {
-        return 'Hello world!';
-    },
-};
+const router = express.Router()
+const app = new express()
+const port = 4000
 
-const app = express();
-app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true,
+
+app.use(bodyParser())
+
+router.get('/', (req, res, next) => {
+    res.send("home")
+})
+
+router.post('/addOne', addOne)
+      .post('/editOne', editOne)
+      .post('/tickOne', tickOne)
+      .post('/delOne', delOne)
+      .get('/getAllList', getAllList)
+
+// router.post('/graphql', async (ctx, next) => {
+//     await graphqlKoa({schema: schema})(ctx, next)
+// })
+router.use('/graphql', expressGraphql({
+    schema,
+    graphiql: true
 }));
-app.listen(4000, () => {
-    console.log('Running a GraphQL API server at localhost:4000/graphql');
-});
+
+app.use(router)
+
+app.listen(port, () => {
+    console.log('server listen port: ' + port)
+})
