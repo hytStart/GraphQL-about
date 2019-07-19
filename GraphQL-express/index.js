@@ -48,9 +48,6 @@ router.post('/addOne', addOne)
       .post('/delOne', delOne)
       .get('/getAllList', getAllList)
 
-// router.post('/graphql', async (ctx, next) => {
-//     await graphqlKoa({schema: schema})(ctx, next)
-// })
 router.use('/graphql', expressGraphql({
     schema,
     graphiql: true
