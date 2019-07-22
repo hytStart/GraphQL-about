@@ -17,6 +17,23 @@ const Query = {
 
     setFavouriteColor: (root, args) => {
         return "Your Fav Color is :" + args.color;
+    },
+
+    greetingWithAuth: (root, args, context, info) => {
+
+        //check if the context.user is null
+        if (!context.user) {
+            throw new Error('Unauthorized');
+        }
+        return "Hello from TutorialsPoint, welcome back : " + context.user.firstName;
+    },
+
+    getTime: () => {
+        const today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        return `${h}:${m}:${s}`;
     }
 }
 
